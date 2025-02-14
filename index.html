@@ -125,16 +125,76 @@
                 }
             });
 
+            const isWorkingHour = (date) => {
+                const hours = date.getHours();
+                return hours >= 9 && hours < 17;
+            };
+
+            const isWorkingDay = (date) => {
+                const day = date.getDay();
+                return day !== 0 && day !== 6;
+            };
+
+            const calculateRemainingWorkHours = (start, end) => {
+                let totalHours = 0;
+                let current = new Date(start);
+                
+                // If we're in the middle of a workday, calculate remaining hours for today
+                if (isWorkingDay(current)) {
+                    const currentHour = current.getHours();
+                    if (currentHour >= 9 && currentHour < 17) {
+                        totalHours += 17 - currentHour;
+                    } else if (currentHour < 9) {
+                        totalHours += 8;
+                    }
+                }
+
+                // Move to next day
+                current.setDate(current.getDate() + 1);
+                current.setHours(0, 0, 0, 0);
+
+                // Calculate full working days
+                while (current < end) {
+                    if (isWorkingDay(current)) {
+                        totalHours += 8;
+                    }
+                    current.setDate(current.getDate() + 1);
+                }
+
+                // Handle last day if it's before 17:00
+                if (isWorkingDay(end) && end.getHours() < 17) {
+                    const endHour = end.getHours();
+                    if (endHour >= 9) {
+                        totalHours -= (17 - endHour);
+                    } else {
+                        totalHours -= 8;
+                    }
+                }
+
+                return totalHours;
+            };
+
             const calculateWorkdays = (start, end) => {
                 let count = 0;
                 let current = new Date(start);
                 
+                // If we're past work hours today, don't count today
+                if (isWorkingDay(current) && current.getHours() >= 17) {
+                    current.setDate(current.getDate() + 1);
+                }
+                
                 while (current <= end) {
-                    if (current.getDay() !== 0 && current.getDay() !== 6) {
+                    if (isWorkingDay(current)) {
                         count++;
                     }
                     current.setDate(current.getDate() + 1);
                 }
+
+                // If end date is before work hours, subtract a day
+                if (isWorkingDay(end) && end.getHours() < 9) {
+                    count--;
+                }
+
                 return count;
             };
 
@@ -176,7 +236,7 @@
                     }
 
                     const workdays = calculateWorkdays(now, endDate);
-                    const workhours = workdays * 8;
+                    const workhours = calculateRemainingWorkHours(now, endDate);
                     const milestone = checkMilestone(workdays);
                     const precise = calculatePreciseCountdown(endDate);
 
