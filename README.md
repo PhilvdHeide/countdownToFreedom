@@ -2,8 +2,6 @@
 
 An elegant, mobile-optimized countdown to the last day at work. This single-page web application provides multiple timers and visual milestone notifications to visualize the remaining time until your freedom day.
 
-![Countdown Screenshot](https://via.placeholder.com/800x600)
-
 ## 🎯 Purpose
 
 This web app was designed to offer a positive and motivating perspective as you approach the end of a work period. The application displays precise countdowns:
