@@ -6,7 +6,7 @@
     <title>Countdown zur Freiheit</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/date-fns/2.30.0/date-fns.min.js"></script>
     <style>
         * {
@@ -124,6 +124,7 @@
                     seconds: 0
                 }
             });
+            const [showedMilestone, setShowedMilestone] = React.useState('');
 
             const isWorkingHour = (date) => {
                 const hours = date.getHours();
@@ -222,6 +223,20 @@
                 return "";
             };
 
+            const triggerConfetti = () => {
+                try {
+                    if (window.confetti) {
+                        window.confetti({
+                            particleCount: 100,
+                            spread: 70,
+                            origin: { y: 0.6 }
+                        });
+                    }
+                } catch (e) {
+                    console.log('Konfetti konnte nicht geladen werden:', e);
+                }
+            };
+
             React.useEffect(() => {
                 const updateCountdown = () => {
                     const now = new Date();
@@ -242,12 +257,10 @@
 
                     setCountdown({ workdays, workhours, milestone, precise });
 
-                    if (milestone) {
-                        confetti({
-                            particleCount: 100,
-                            spread: 70,
-                            origin: { y: 0.6 }
-                        });
+                    // Trigger confetti only for new milestones
+                    if (milestone && milestone !== showedMilestone) {
+                        setShowedMilestone(milestone);
+                        setTimeout(triggerConfetti, 500);
                     }
                 };
 
@@ -255,7 +268,7 @@
                 const timer = setInterval(updateCountdown, 1000); // Update every second for precise countdown
 
                 return () => clearInterval(timer);
-            }, []);
+            }, [showedMilestone]);
 
             const TimeUnit = ({ value, label }) => {
                 return React.createElement('div', { className: 'time-unit' },
